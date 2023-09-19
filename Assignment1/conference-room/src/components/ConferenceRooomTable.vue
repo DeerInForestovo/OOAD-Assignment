@@ -21,13 +21,17 @@
 
       <el-table-column label="Location" width="300">
         <template #default="scope">
-          <el-text>{{ scope.row.Building }}</el-text>
+          <el-text>{{ buildingOptions[scope.row.Building] }}</el-text>
           <br>
           <el-text>Room: {{ scope.row.Room }}</el-text>
         </template>
       </el-table-column>
 
-      <el-table-column prop="Date" label="Date" width="150"/>
+      <el-table-column label="Date" width="150">
+        <template #default="scope">
+          <el-text>{{ (new Date(scope.row.Date)).toLocaleDateString() }}</el-text>
+        </template>
+      </el-table-column>
 
       <el-table-column label="Start Time" width="150">
         <template #default="scope">
@@ -42,7 +46,7 @@
 
       <el-table-column prop="MaxDuration" label="MaxDuration" width="150">
         <template #default="scope">
-          <el-text>{{ scope.row.MaxDuration }} hours</el-text>
+          <el-text>{{ scope.row.MaxDuration }} hour(s)</el-text>
         </template>
       </el-table-column>
 
@@ -50,7 +54,13 @@
         <template #default="scope">
           <el-button type="primary" size="small" @click="editRoom(scope.$index)">Edit</el-button>
           <br>
-          <el-button type="danger" size="small" @click="deleteRoom(scope.$index)">Delete</el-button>
+          <el-popconfirm
+              title="Are you sure to delete this?"
+              @confirm="deleteRoom(scope.$index)">
+            <template #reference>
+              <el-button type="danger" size="small">Delete</el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
 
@@ -70,7 +80,7 @@
 
     <el-dialog
         v-model="dialogVisible"
-        title="Add a New Conference Room"
+        :title="dialogTitle"
         width="75%"
         :before-close="handleClose"
     >
@@ -82,6 +92,9 @@
           label-width="auto"
           label-position="right"
       >
+
+<!--        Room and Type        -->
+
         <el-form-item label="Room Name" prop="RoomName">
           <el-input v-model="ConferenceRoomForm.RoomName" style="width: 40%"/>
         </el-form-item>
@@ -96,6 +109,8 @@
           </el-radio-group>
         </el-form-item>
 
+<!--        Location        -->
+
         <div style="display: flex">
           <el-form-item label="Location" prop="Building" style="flex: 1">
             <el-select
@@ -105,10 +120,10 @@
                 placeholder="* Select a building"
             >
               <el-option
-                  v-for="item in BuildingOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
+                  v-for="(item, index) in buildingOptions"
+                  :key="item"
+                  :label="item"
+                  :value="index"
               />
             </el-select>
           </el-form-item>
@@ -116,6 +131,16 @@
             <el-input v-model="ConferenceRoomForm.Room" style="width: 20%"/>
           </el-form-item>
         </div>
+
+<!--        Date and Time Range        -->
+
+        <el-form-item label="Date" prop="Date">
+          <el-date-picker
+              v-model="ConferenceRoomForm.Date"
+              type="date"
+              :disabled-date="disabledDate"
+          />
+        </el-form-item>
         <el-form-item label="Time Range" prop="TimeRange" style=" width: 50%">
           <el-time-picker
               is-range
@@ -126,7 +151,7 @@
           />
         </el-form-item>
         <el-form-item label="Max Duration" prop="MaxDuration">
-          <el-input v-model="ConferenceRoomForm.MaxDuration" style="width: 10%"/>
+          <el-input v-model.number="ConferenceRoomForm.MaxDuration" type="text" style="width: 10%"/>
           <el-text>hours</el-text>
         </el-form-item>
 
@@ -135,7 +160,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button type="danger" @click="handleCancel">Cancel</el-button>
-          <el-button type="primary" @click="addRoom">Confirm</el-button>
+          <el-button type="primary" @click="dialogConfirm">Confirm</el-button>
         </span>
       </template>
     </el-dialog>
@@ -163,7 +188,7 @@ export default {
     };
 
     const departmentNameValidator = (rule, value, callback) => {
-      const re = /^[A-Za-z]*$/;
+      const re = /^[A-Z][A-Za-z]*$/;
       if(!value) {
         return callback(new Error('Please input department name.'));
       }
@@ -181,19 +206,19 @@ export default {
       callback();
     };
 
-    const maxDurationValidator = (rule, value, callback) => {
-      const re = /^[0-9]*$/;
-      if(!value) {
-        return callback(new Error('Please input max duration.'));
-      }
-      if(!re.test(value)) {
-        return callback(new Error('Max duration should be a number.'));
-      }
-      callback();
-    };
+    // const maxDurationValidator = (rule, value, callback) => {
+    //   const re = /^[0-9]*$/;
+    //   if(!value) {
+    //     return callback(new Error('Please input max duration.'));
+    //   }
+    //   if(!re.test(value)) {
+    //     return callback(new Error('Max duration should be a number.'));
+    //   }
+    //   callback();
+    // };
 
     const roomValidator = (rule, value, callback) => {
-      const re = /^[A-Za-z0-9]*$/;
+      const re = /^[1-9][0-9]{0,3}[ABC]?$/;
       if(!value) {
         return callback(new Error('Please input room name.'));
       }
@@ -206,101 +231,88 @@ export default {
     return {
       conferenceRooms: [
         {
-          "RoomName": "Room1",
-          "Department": "Electrical",
-          "Type": "Small",
-          "Building": "South Building",
-          "Room": "426A",
-          "Date": "2023/12/10",
-          "TimeRange": [
+          RoomName: "Room1",
+          Department: "Electrical",
+          Type: "Small",
+          Building: 0,
+          Room: "426A",
+          Date: (new Date()).setFullYear(2023,11,30),
+          TimeRange: [
               (new Date()).setHours(8, 0, 0),
               (new Date()).setHours(10, 0, 0),
           ],
-          "MaxDuration": "2",
+          MaxDuration: 2,
         },
-        // {
-        //   "RoomName": "Room2",
-        //   "Department": "Computer Science",
-        //   "Type": "Big",
-        //   "Building": "Teaching Building No.1 Lecture Hall",
-        //   "Room": "434A",
-        //   "Date": "2023/12/14",
-        //   "StartTime": "00:00",
-        //   "EndTime": "24:00",
-        //   "MaxDuration": "4",
-        // },
-        // {
-        //   "RoomName": "Room3",
-        //   "Department": "Physics",
-        //   "Type": "Medium",
-        //   "Building": "Library Conference Hall",
-        //   "Room": "101",
-        //   "Date": "2023/12/15",
-        //   "StartTime": "09:00",
-        //   "EndTime": "17:00",
-        //   "MaxDuration": "1",
-        // },
+        {
+          RoomName: "Room2",
+          Department: "Computer Science",
+          Type: "Big",
+          Building: 1,
+          Room: "434A",
+          Date: (new Date()).setFullYear(2023,8,30),
+          TimeRange: [
+            (new Date()).setHours(10, 0, 0),
+            (new Date()).setHours(17, 0, 0),
+          ],
+          MaxDuration: 4,
+        },
+        {
+          RoomName: "Room3",
+          Department: "Physics",
+          Type: "Medium",
+          Building: 2,
+          Room: "101",
+          Date: (new Date()).setFullYear(2023,9,15),
+          TimeRange: [
+            (new Date()).setHours(14, 0, 0),
+            (new Date()).setHours(19, 0, 0),
+          ],
+          MaxDuration: 1,
+        },
       ],
-      ConferenceRoomForm: {
-        RoomName: "",
-        Department: "",
-        Type: "",
-        Building: "",
-        Room: "",
-        Date: "",
-        TimeRange: [],
-        MaxDuration: "",
-      },
+      ConferenceRoomForm: {},
       rules: {
         RoomName:[
           {validator: roomNameValidator, trigger: 'blur'},
-          {required: true, trigger: true},
+          {required: true},
         ],
         Type: [
           {required: true, message: "Please choose the type of the room.", trigger: true}
         ],
         Department: [
           {validator: departmentNameValidator, trigger: 'blur'},
-          {required: true, trigger: true},
+          {required: true},
         ],
         Date: [
           {validator: dateValidator, trigger: 'blur'},
-          {required: true, trigger: true},
+          {required: true},
         ],
         Building: [
           {required: true, message: "Please choose a building.", trigger: true}
         ],
         Room: [
           {validator: roomValidator, trigger: 'blur'},
-          {required: true, trigger: true},
+          {required: true},
         ],
-        // TimeRange: [
-        //   {required: true, message: "Please choose the time range.", trigger: true},
-        // ],
+        TimeRange: [
+          {required: true, message: "Please choose the time range."},
+        ],
         MaxDuration: [
-          {validator: maxDurationValidator, trigger: 'blur'},
-          {required: true, trigger: true},
+          {required: true, message: "Please input the max duration."},
+          {type: 'number', message: "The max duration should be a number."},
+          // {validator: maxDurationValidator, trigger: 'blur'},
+          // {required: true, trigger: true},
         ],
       },
-      BuildingOptions: [
-        {
-          value: 'Teaching Building No.1 Lecture Hall',
-          label: 'Teaching Building No.1 Lecture Hall',
-        },
-        {
-          value: 'Research Building Lecture Hall',
-          label: 'Research Building Lecture Hall',
-        },
-        {
-          value: 'Library Conference Hall',
-          label: 'Library Conference Hall',
-        },
-        {
-          value: 'South Building',
-          label: 'South Building',
-        }
+      buildingOptions: [
+        'Teaching Building No.1 Lecture Hall',
+        'Research Building Lecture Hall',
+        'Library Conference Hall',
+        'South Building',
       ],
-      dialogVisible: false
+      dialogVisible: false,
+      editingIndex: -1,
+      dialogTitle: '',
     }
   },
 
@@ -315,20 +327,44 @@ export default {
       })
     },
     editRoom(index) {
-      this.ConferenceRoomForm = this.conferenceRooms[index]
+      this.editingIndex = index
+      this.ConferenceRoomForm = JSON.parse(JSON.stringify(this.conferenceRooms[index]))
+      console.log(this.ConferenceRoomForm)
+      this.dialogTitle = 'Edit Room Information'
       this.dialogVisible = true
-      this.conferenceRooms[index] = this.ConferenceRoomForm
+      console.log(this.ConferenceRoomForm)
     },
     createNewRoom() {
-      this.ConferenceRoomForm = {}
+      this.editingIndex = -1
+      this.ConferenceRoomForm = {
+        RoomName: "",
+        Department: "",
+        Type: "",
+        Building: "",
+        Room: "",
+        Date: new Date().setDate(new Date().getDate() + 1),
+        TimeRange: [new Date().setSeconds(0), new Date().setSeconds(0)],
+        MaxDuration: "",
+      }
+      this.dialogTitle = 'Add a New Room'
       this.dialogVisible = true
-      this.conferenceRooms.push(this.ConferenceRoomForm)
+      console.log(this.ConferenceRoomForm)
     },
-    addRoom() {
+    dialogConfirm() {
       this.$refs['ConferenceRoomForm'].validate((valid) => {
         if(valid) {
           console.log(this.ConferenceRoomForm)
           this.dialogVisible = false
+          if(this.editingIndex === -1)
+            this.conferenceRooms.push(this.ConferenceRoomForm)
+          else
+            this.conferenceRooms[this.editingIndex] = this.ConferenceRoomForm
+          ElNotification({
+            title: 'Success',
+            message: 'Your modification has been saved.',
+            type: 'success',
+            duration: 1500,
+          })
         }
       })
     },
@@ -359,10 +395,15 @@ export default {
           })
           .catch(() => {
           })
-    }
+    },
+    disabledDate(time) {
+      return time.getTime() <= Date.now()
+    },
   }
 }
 </script>
+
+
 <style scoped>
 
 </style>
