@@ -1,5 +1,28 @@
 <template>
-  <div>
+
+  <el-container>
+
+    <el-header class="header">
+
+      <el-row>
+        <el-col :span="12" align="left">
+          <h1>Manage System</h1>
+        </el-col>
+      </el-row>
+
+
+    </el-header>
+
+    <el-container>
+      <el-main>
+
+        <el-row>
+          <el-col :span="24">
+
+            <el-tabs :tab-position="'left'" class="tab-root">
+              <el-tab-pane label="Conference Room List">
+
+            <div>
     <h2 id="a">Conference Room List</h2>
 
 <!--    Back to top    -->
@@ -13,6 +36,7 @@
         style="width: 80%;;margin: 0 auto;"
         :header-cell-style="{'text-align':'center'}"
         :cell-style="{'text-align':'center'}"
+        max-height="440"
     >
 
       <el-table-column prop="RoomName" label="Room Name" width="150"/>
@@ -68,8 +92,6 @@
 
 <!--    Add a New Conference Room Button    -->
 
-    <br>
-    <br>
     <br>
 
     <el-button type="primary" size="large" @click="createNewRoom">
@@ -166,12 +188,24 @@
     </el-dialog>
 
   </div>
+
+              </el-tab-pane>
+              <el-tab-pane label="More...">Nothing yet</el-tab-pane>
+            </el-tabs>
+
+          </el-col>
+        </el-row>
+
+      </el-main>
+    </el-container>
+
+  </el-container>
+
 </template>
 
 
 <script>
 import {ElMessageBox, ElNotification} from "element-plus";
-
 
 export default {
   name: 'ConferenceRoomTable',
@@ -206,17 +240,6 @@ export default {
       callback();
     };
 
-    // const maxDurationValidator = (rule, value, callback) => {
-    //   const re = /^[0-9]*$/;
-    //   if(!value) {
-    //     return callback(new Error('Please input max duration.'));
-    //   }
-    //   if(!re.test(value)) {
-    //     return callback(new Error('Max duration should be a number.'));
-    //   }
-    //   callback();
-    // };
-
     const roomValidator = (rule, value, callback) => {
       const re = /^[1-9][0-9]{0,3}[ABC]?$/;
       if(!value) {
@@ -238,8 +261,8 @@ export default {
           Room: "426A",
           Date: (new Date()).setFullYear(2023,11,30),
           TimeRange: [
-              (new Date()).setHours(8, 0, 0),
-              (new Date()).setHours(10, 0, 0),
+            (new Date()).setHours(8, 0, 0),
+            (new Date()).setHours(10, 0, 0),
           ],
           MaxDuration: 2,
         },
@@ -300,8 +323,6 @@ export default {
         MaxDuration: [
           {required: true, message: "Please input the max duration."},
           {type: 'number', message: "The max duration should be a number."},
-          // {validator: maxDurationValidator, trigger: 'blur'},
-          // {required: true, trigger: true},
         ],
       },
       buildingOptions: [
@@ -405,5 +426,9 @@ export default {
 
 
 <style scoped>
+
+.header {
+  font-family: Cambria, serif;
+}
 
 </style>
