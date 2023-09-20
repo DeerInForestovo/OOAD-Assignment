@@ -222,7 +222,7 @@ export default {
     };
 
     const departmentNameValidator = (rule, value, callback) => {
-      const re = /^[A-Z][A-Za-z]*$/;
+      const re = /^[A-Z][A-Za-z\s]*$/;
       if(!value) {
         return callback(new Error('Please input department name.'));
       }
