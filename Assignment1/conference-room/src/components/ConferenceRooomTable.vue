@@ -211,7 +211,7 @@ export default {
   name: 'ConferenceRoomTable',
   data() {
     const roomNameValidator = (rule, value, callback) => {
-      const re = /^[A-Za-z0-9]*$/;
+      const re = /^[A-Za-z]+[0-9]+$/;
       if(!value) {
         return callback(new Error('Please input room name.'));
       }
