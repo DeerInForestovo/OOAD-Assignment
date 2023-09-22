@@ -1,206 +1,203 @@
 <template>
-
-  <el-container>
-
-    <el-header class="header">
-
-      <el-row>
-        <el-col :span="12" align="left">
-          <h1>Manage System</h1>
-        </el-col>
-      </el-row>
-
-
-    </el-header>
+  <div id="MainPage">
 
     <el-container>
-      <el-main>
+
+
+      <el-header class="header">
 
         <el-row>
-          <el-col :span="24">
-
-            <el-tabs :tab-position="'left'" class="tab-root">
-              <el-tab-pane label="Conference Room List">
-
-            <div>
-    <h2 id="a">Conference Room List</h2>
-
-<!--    Back to top    -->
-
-    <el-backtop :right="100" :bottom="100" />
-
-<!--    Table    -->
-
-    <el-table
-        :data="conferenceRooms"
-        style="width: 80%;;margin: 0 auto;"
-        :header-cell-style="{'text-align':'center'}"
-        :cell-style="{'text-align':'center'}"
-        max-height="440"
-    >
-
-      <el-table-column prop="RoomName" label="Room Name" width="150"/>
-      <el-table-column prop="Department" label="Department" width="150"/>
-      <el-table-column prop="Type" label="Type" width="150"/>
-
-      <el-table-column label="Location" width="300">
-        <template #default="scope">
-          <el-text>{{ buildingOptions[scope.row.Building] }}</el-text>
-          <br>
-          <el-text>Room: {{ scope.row.Room }}</el-text>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="Date" width="150">
-        <template #default="scope">
-          <el-text>{{ (new Date(scope.row.Date)).toLocaleDateString() }}</el-text>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="Start Time" width="150">
-        <template #default="scope">
-          <el-text>{{ (new Date(scope.row.TimeRange[0])).toLocaleTimeString() }}</el-text>
-        </template>
-      </el-table-column>
-      <el-table-column prop="EndTime" label="End Time" width="150">
-        <template #default="scope">
-          <el-text>{{ (new Date(scope.row.TimeRange[1])).toLocaleTimeString() }}</el-text>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="MaxDuration" label="MaxDuration" width="150">
-        <template #default="scope">
-          <el-text>{{ scope.row.MaxDuration }} hour(s)</el-text>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="Operation" width="150" fixed="right">
-        <template #default="scope">
-          <el-button type="primary" size="small" @click="editRoom(scope.$index)">Edit</el-button>
-          <br>
-          <el-popconfirm
-              title="Are you sure to delete this?"
-              @confirm="deleteRoom(scope.$index)">
-            <template #reference>
-              <el-button type="danger" size="small">Delete</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-
-    </el-table>
-
-<!--    Add a New Conference Room Button    -->
-
-    <br>
-
-    <el-button type="primary" size="large" @click="createNewRoom">
-      Add a New Conference Room
-    </el-button>
-
-<!--    Dialog    -->
-
-    <el-dialog
-        v-model="dialogVisible"
-        :title="dialogTitle"
-        width="75%"
-        :before-close="handleClose"
-    >
-
-      <el-form
-          ref="ConferenceRoomForm"
-          :model="ConferenceRoomForm"
-          :rules="rules"
-          label-width="auto"
-          label-position="right"
-      >
-
-<!--        Room and Type        -->
-
-        <el-form-item label="Room Name" prop="RoomName">
-          <el-input v-model="ConferenceRoomForm.RoomName" style="width: 40%"/>
-        </el-form-item>
-        <el-form-item label="Department" prop="Department">
-          <el-input v-model="ConferenceRoomForm.Department" style="width: 40%"/>
-        </el-form-item>
-        <el-form-item label="Type" prop="Type">
-          <el-radio-group v-model="ConferenceRoomForm.Type">
-            <el-radio label="Small" model-value="Small">Small</el-radio>
-            <el-radio label="Medium" model-value="Medium">Medium</el-radio>
-            <el-radio label="Big" model-value="Big">Big</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-<!--        Location        -->
-
-        <div style="display: flex">
-          <el-form-item label="Location" prop="Building" style="flex: 1">
-            <el-select
-                style="width: 100%"
-                label="Building"
-                v-model="ConferenceRoomForm.Building"
-                placeholder="* Select a building"
-            >
-              <el-option
-                  v-for="(item, index) in buildingOptions"
-                  :key="item"
-                  :label="item"
-                  :value="index"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item prop="Room" style="flex: 1">
-            <el-input v-model="ConferenceRoomForm.Room" style="width: 20%"/>
-          </el-form-item>
-        </div>
-
-<!--        Date and Time Range        -->
-
-        <el-form-item label="Date" prop="Date">
-          <el-date-picker
-              v-model="ConferenceRoomForm.Date"
-              type="date"
-              :disabled-date="disabledDate"
-          />
-        </el-form-item>
-        <el-form-item label="Time Range" prop="TimeRange" style=" width: 50%">
-          <el-time-picker
-              is-range
-              range-separator="To"
-              start-placeholder="Start time"
-              end-placeholder="End time"
-              v-model="ConferenceRoomForm.TimeRange"
-          />
-        </el-form-item>
-        <el-form-item label="Max Duration" prop="MaxDuration">
-          <el-input v-model.number="ConferenceRoomForm.MaxDuration" type="text" style="width: 10%"/>
-          <el-text>hours</el-text>
-        </el-form-item>
-
-      </el-form>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="danger" @click="handleCancel">Cancel</el-button>
-          <el-button type="primary" @click="dialogConfirm">Confirm</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-  </div>
-
-              </el-tab-pane>
-              <el-tab-pane label="More...">Nothing yet</el-tab-pane>
-            </el-tabs>
-
+          <el-col :span="12" id="MainPageTitle">
+            <h1>Manage System</h1>
           </el-col>
         </el-row>
 
-      </el-main>
+      </el-header>
+
+
+      <el-container>
+        <el-main>
+          <el-row>
+            <el-col :span="24">
+
+              <el-tabs :tab-position="'left'" id="TabRoot">
+                <el-tab-pane label="Conference Room List">
+
+                  <h2 id="ConferenceRoomListTitle">Conference Room List</h2>
+
+            <!--    Table    -->
+
+                  <el-table
+                      id="ConferenceRoomTable"
+                      :data="conferenceRooms"
+                      style="width: 80%;;margin: 0 auto;"
+                      :header-cell-style="{'text-align':'center'}"
+                      :cell-style="{'text-align':'center'}"
+                      max-height="440"
+                  >
+
+                    <el-table-column prop="RoomName" label="Room Name" width="150"/>
+                    <el-table-column prop="Department" label="Department" width="150"/>
+                    <el-table-column prop="Type" label="Type" width="150"/>
+
+                    <el-table-column label="Location" width="300">
+                      <template #default="scope">
+                        <el-text>{{ buildingOptions[scope.row.Building] }}</el-text>
+                        <br>
+                        <el-text>Room: {{ scope.row.Room }}</el-text>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column label="Date" width="150">
+                      <template #default="scope">
+                        <el-text>{{ (new Date(scope.row.Date)).toLocaleDateString() }}</el-text>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column label="Start Time" width="150">
+                      <template #default="scope">
+                        <el-text>{{ (new Date(scope.row.TimeRange[0])).toLocaleTimeString() }}</el-text>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column prop="EndTime" label="End Time" width="150">
+                      <template #default="scope">
+                        <el-text>{{ (new Date(scope.row.TimeRange[1])).toLocaleTimeString() }}</el-text>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column prop="MaxDuration" label="MaxDuration" width="150">
+                      <template #default="scope">
+                        <el-text>{{ scope.row.MaxDuration }} hour(s)</el-text>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column label="Operation" width="150" fixed="right">
+                      <template #default="scope">
+                        <el-button type="primary" size="small" @click="editRoom(scope.$index)">Edit</el-button>
+                        <br>
+                        <el-popconfirm
+                            title="Are you sure to delete this?"
+                            @confirm="deleteRoom(scope.$index)">
+                          <template #reference>
+                            <el-button type="danger" size="small">Delete</el-button>
+                          </template>
+                        </el-popconfirm>
+                      </template>
+                    </el-table-column>
+
+                  </el-table>
+
+            <!--    Add a New Conference Room Button    -->
+
+                  <br>
+
+                  <el-button type="primary" size="large" @click="createNewRoom">
+                    Add a New Conference Room
+                  </el-button>
+
+            <!--    Dialog    -->
+
+                  <el-dialog
+                      id="ConferenceRoomDialog"
+                      v-model="dialogVisible"
+                      :title="dialogTitle"
+                      width="75%"
+                      :before-close="handleClose"
+                  >
+
+                    <el-form
+                        id="ConferenceRoomDialogForm"
+                        ref="ConferenceRoomForm"
+                        :model="ConferenceRoomForm"
+                        :rules="rules"
+                        label-width="auto"
+                        label-position="right"
+                    >
+
+              <!--        Room and Type        -->
+
+                      <el-form-item label="Room Name" prop="RoomName">
+                        <el-input v-model="ConferenceRoomForm.RoomName" style="width: 40%"/>
+                      </el-form-item>
+                      <el-form-item label="Department" prop="Department">
+                        <el-input v-model="ConferenceRoomForm.Department" style="width: 40%"/>
+                      </el-form-item>
+                      <el-form-item label="Type" prop="Type">
+                        <el-radio-group v-model="ConferenceRoomForm.Type">
+                          <el-radio label="Small" model-value="Small">Small</el-radio>
+                          <el-radio label="Medium" model-value="Medium">Medium</el-radio>
+                          <el-radio label="Big" model-value="Big">Big</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+
+              <!--        Location        -->
+
+                      <div style="display: flex">
+                        <el-form-item label="Location" prop="Building" style="flex: 1">
+                          <el-select
+                              style="width: 100%"
+                              label="Building"
+                              v-model="ConferenceRoomForm.Building"
+                              placeholder="* Select a building"
+                          >
+                            <el-option
+                                v-for="(item, index) in buildingOptions"
+                                :key="item"
+                                :label="item"
+                                :value="index"
+                            />
+                          </el-select>
+                        </el-form-item>
+                        <el-form-item prop="Room" style="flex: 1">
+                          <el-input v-model="ConferenceRoomForm.Room" style="width: 20%"/>
+                        </el-form-item>
+                      </div>
+
+              <!--        Date and Time Range        -->
+
+                      <el-form-item label="Date" prop="Date">
+                        <el-date-picker
+                            v-model="ConferenceRoomForm.Date"
+                            type="date"
+                            :disabled-date="disabledDate"
+                        />
+                      </el-form-item>
+                      <el-form-item label="Time Range" prop="TimeRange" style=" width: 50%">
+                        <el-time-picker
+                            is-range
+                            range-separator="To"
+                            start-placeholder="Start time"
+                            end-placeholder="End time"
+                            v-model="ConferenceRoomForm.TimeRange"
+                        />
+                      </el-form-item>
+                      <el-form-item label="Max Duration" prop="MaxDuration">
+                        <el-input v-model.number="ConferenceRoomForm.MaxDuration" type="text" style="width: 10%"/>
+                        <el-text>hours</el-text>
+                      </el-form-item>
+
+                    </el-form>
+
+                    <template #footer>
+                      <span class="dialog-footer">
+                        <el-button type="danger" @click="handleCancel">Cancel</el-button>
+                        <el-button type="primary" @click="dialogConfirm">Confirm</el-button>
+                      </span>
+                    </template>
+                  </el-dialog>
+
+                </el-tab-pane>
+                <el-tab-pane label="More...">Nothing yet</el-tab-pane>
+              </el-tabs>
+
+            </el-col>
+          </el-row>
+        </el-main>
+      </el-container>
+
     </el-container>
-
-  </el-container>
-
+  </div>
 </template>
 
 
@@ -429,6 +426,10 @@ export default {
 
 .header {
   font-family: Cambria, serif;
+}
+
+#ConferenceRoomListTitle {
+  text-align: center;
 }
 
 </style>
