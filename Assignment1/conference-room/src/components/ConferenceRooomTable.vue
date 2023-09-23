@@ -10,6 +10,11 @@
           <el-col :span="12" id="MainPageTitle">
             <h1>Manage System</h1>
           </el-col>
+          <el-col :span="12" id="ToggleDarkButton">
+            <el-button @click="toggleDark">
+              Click
+            </el-button>
+          </el-col>
         </el-row>
 
       </el-header>
@@ -90,11 +95,12 @@
 
             <!--    Add a New Conference Room Button    -->
 
-                  <br>
-
-                  <el-button type="primary" size="large" @click="createNewRoom">
-                    Add a New Conference Room
-                  </el-button>
+                  <div id="AddConferenceRoomButton">
+                    <br>
+                    <el-button type="primary" size="large" @click="createNewRoom">
+                      Add a New Conference Room
+                    </el-button>
+                  </div>
 
             <!--    Dialog    -->
 
@@ -199,6 +205,12 @@
     </el-container>
   </div>
 </template>
+
+<script setup>
+import { useDark, useToggle } from '@vueuse/core'
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
+</script>
 
 
 <script>
@@ -429,6 +441,10 @@ export default {
 }
 
 #ConferenceRoomListTitle {
+  text-align: center;
+}
+
+#AddConferenceRoomButton {
   text-align: center;
 }
 
