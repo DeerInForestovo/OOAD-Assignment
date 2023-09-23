@@ -10,12 +10,17 @@
           <el-col :span="12" id="MainPageTitle">
             <h1>Manage System</h1>
           </el-col>
+
+<!--reference: https://blog.csdn.net/wanghu20150107010129/article/details/131110061-->
           <el-col :span="12" id="ToggleDarkButton">
-            <el-button @click="toggleDark">
-              Click
+            <el-text> Switch Dark Mode </el-text>
+            <el-button text class="switch" :class="isDark ? 'isDark-switch' : 'noDark-switch'" @click="toggleDark">
+              <el-icon v-if="isDark"> <Sunny/> </el-icon>
+              <el-icon v-else> <Moon/> </el-icon>
             </el-button>
           </el-col>
         </el-row>
+
 
       </el-header>
 
@@ -207,9 +212,27 @@
 </template>
 
 <script setup>
-import { useDark, useToggle } from '@vueuse/core'
-const isDark = useDark()
-const toggleDark = useToggle(isDark)
+import { ref } from 'vue'
+import { Moon, Sunny } from "@element-plus/icons-vue";
+const isDark = ref(true)
+
+const toggleDark = () => {
+  // reference: https://blog.csdn.net/wanghu20150107010129/article/details/131110061
+  isDark.value = !isDark.value
+  const html = document.querySelector('html')
+  if (html) {
+    if (isDark.value) {
+      html.classList.remove("dark");
+      html.classList.add("light");
+    } else {
+      html.classList.remove("light");
+      html.classList.add("dark");
+    }
+  }
+}
+
+
+
 </script>
 
 
@@ -446,6 +469,10 @@ export default {
 
 #AddConferenceRoomButton {
   text-align: center;
+}
+
+#ToggleDarkButton {
+  text-align: right;
 }
 
 </style>
