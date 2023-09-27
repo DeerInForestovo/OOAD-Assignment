@@ -206,8 +206,14 @@
           </el-col>
 
           <el-col :span="4" class="Portrait">
-            <img src="../assets/Arona.jpg" v-if="isDark"/>
-            <img src="../assets/Prona.jpg" v-else/>
+            <!--Arona-->
+            <!--https://sm.ms/image/IwYom18CQDkXZVG-->
+            <!--<img src="../assets/Arona.jpg" v-if="isDark"/>-->
+            <el-image :fit="'contain'" :src="'https://s2.loli.net/2023/09/27/IwYom18CQDkXZVG.jpg'" v-if="isDark"></el-image>
+            <!--Prona-->
+            <!--<img src="../assets/Prona.jpg" v-else/>-->
+            <!--https://sm.ms/image/uaFBRgt64kWf9I8-->
+            <el-image :fit="'contain'" :src="'https://s2.loli.net/2023/09/27/uaFBRgt64kWf9I8.jpg'" v-else></el-image>
           </el-col>
         </el-row>
       </el-main>
@@ -492,6 +498,7 @@ export default {
 .Portrait img {
   width: 100%;
   height: 100%;
+
 }
 
 </style>
