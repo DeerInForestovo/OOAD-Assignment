@@ -175,7 +175,7 @@
                           :disabled-date="disabledDate"
                       />
                     </el-form-item>
-                    <el-form-item label="Time Range" prop="TimeRange" style=" width: 50%">
+                    <el-form-item label="Time Range" prop="TimeRange" style="width: 50%">
                       <el-time-picker
                           is-range
                           range-separator="To"
@@ -185,7 +185,7 @@
                       />
                     </el-form-item>
                     <el-form-item label="Max Duration" prop="MaxDuration">
-                      <el-input v-model.number="ConferenceRoomForm.MaxDuration" type="text" style="width: 10%"/>
+                      <el-input v-model="ConferenceRoomForm.MaxDuration" style="width: 10%"/>
                       <el-text>hours</el-text>
                     </el-form-item>
 
@@ -290,6 +290,20 @@ export default {
       callback();
     };
 
+    const maxDurationValidator = (rule, value, callback) => {
+      if(!value) {
+        return callback(new Error('Please input a positive number.'));
+      }
+      let num = Number(value, 10);
+      if(isNaN(num)) {
+        return callback(new Error('Please input a positive number.'));
+      }
+      if(num <= 0) {
+        return callback(new Error('Please input a positive number.'));
+      }
+      callback();
+    }
+
     return {
       conferenceRooms: [
         {
@@ -360,8 +374,8 @@ export default {
           {required: true, message: "Please choose the time range."},
         ],
         MaxDuration: [
-          {required: true, message: "Please input the max duration."},
-          {type: 'number', message: "The max duration should be a number."},
+          {validator: maxDurationValidator, trigger: 'blur'},
+          {required: true},
         ],
       },
       buildingOptions: [
@@ -416,6 +430,8 @@ export default {
         if(valid) {
           console.log(this.ConferenceRoomForm)
           this.dialogVisible = false
+          this.ConferenceRoomForm['MaxDuration'] = Number(this.ConferenceRoomForm['MaxDuration'])
+          console.log(this.ConferenceRoomForm)
           if(this.editingIndex === -1)
             this.conferenceRooms.push(this.ConferenceRoomForm)
           else
