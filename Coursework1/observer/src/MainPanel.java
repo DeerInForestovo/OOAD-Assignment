@@ -6,19 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MainPanel extends JPanel implements KeyListener {
+public class MainPanel extends JPanel implements KeyListener, Subject<Ball> {
     private List<Ball> paintingBallList = new ArrayList<>();
-
     enum GameStatus {PREPARING, START, STOP}
-
     private GameStatus gameStatus;
     private int score;
-    private Ball whiteBall;
+    private final WhiteBall whiteBall;
     Random random = new Random();
     Timer t;
 
-    public MainPanel() {
+    public MainPanel(WhiteBall whiteBall) {
         super();
+
+        this.whiteBall = whiteBall;
+        this.whiteBall.setVisible(false);
+        add(whiteBall);
+        this.registerObserver(this.whiteBall);
+
         setLayout(null);
         setSize(590, 590);
         setFocusable(true);
@@ -26,7 +30,6 @@ public class MainPanel extends JPanel implements KeyListener {
         t = new Timer(50, e -> moveBalls());
         restartGame();
     }
-
 
     public void startGame() {
         this.gameStatus = GameStatus.START;
@@ -50,24 +53,23 @@ public class MainPanel extends JPanel implements KeyListener {
     }
 
     public void restartGame() {
+        this.clearObservers();
+        this.whiteBall.clearObservers();
+
         this.gameStatus = GameStatus.PREPARING;
-        if (paintingBallList.size() > 0) {
+        if (!paintingBallList.isEmpty()) {
             paintingBallList.forEach(this::remove);
         }
         this.paintingBallList = new ArrayList<>();
         Ball.setCount(0);
         this.score = 100;
-        if (this.whiteBall != null)
-            this.whiteBall.setVisible(false);
+
+        // deleted: if (this.whiteBall != null)
+        this.whiteBall.setVisible(false);
+        this.observers.add(this.whiteBall);
 
         this.t.start();
         repaint();
-    }
-
-    public void setWhiteBall(Ball whiteBall) {
-        this.whiteBall = whiteBall;
-        this.whiteBall.setVisible(false);
-        add(whiteBall);
     }
 
     public void moveBalls() {
@@ -106,70 +108,48 @@ public class MainPanel extends JPanel implements KeyListener {
         this.score += increment;
     }
 
-
     public void addBallToPanel(Ball ball) {
         paintingBallList.add(ball);
         this.add(ball);
+
+        this.registerObserver(ball);
+        this.whiteBall.registerObserver(ball);
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
         char keyChar = e.getKeyChar();
         System.out.println("Press: " + keyChar);
-        paintingBallList.stream().filter(b -> b.getColor() == Color.RED).forEach(
-                redBall -> {
-                    switch (keyChar) {
-                        case 'a':
-                            redBall.setXSpeed(-random.nextInt(3) - 1);
-                            break;
-                        case 'd':
-                            redBall.setXSpeed(random.nextInt(3) + 1);
-                            break;
-                        case 'w':
-                            redBall.setYSpeed(-random.nextInt(3) - 1);
-                            break;
-                        case 's':
-                            redBall.setYSpeed(random.nextInt(3) + 1);
-                    }
-                }
-        );
-        paintingBallList.stream().
-                filter(b -> b.getColor() == Color.BLUE).
-                forEach(
-                        blueBall ->
-                        {
-                            blueBall.setXSpeed(-1 * blueBall.getXSpeed());
-                            blueBall.setYSpeed(-1 * blueBall.getYSpeed());
-                        }
-                );
-
-        if (gameStatus == GameStatus.START) {
-            switch (keyChar) {
-                case 'a':
-                    whiteBall.setXSpeed(-8);
-                    break;
-                case 'd':
-                    whiteBall.setXSpeed(8);
-                    break;
-                case 'w':
-                    whiteBall.setYSpeed(-8);
-                    break;
-                case 's':
-                    whiteBall.setYSpeed(8);
-                    break;
-            }
-        }
+        if (gameStatus == GameStatus.START)
+            this.notifyObservers(keyChar);
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e) {}
 
+    final private List<Ball> observers = new ArrayList<>();
+
+    @Override
+    public void registerObserver(Ball ball) {
+        this.observers.add(ball);
     }
 
+    @Override
+    public void removeObserver(Ball ball) {
+        this.observers.remove(ball);
+    }
 
+    @Override
+    public void clearObservers() {
+        this.observers.clear();
+    }
+
+    @Override
+    public void notifyObservers(char key) {
+        for (Ball observer: this.observers)
+            observer.update(key, this.whiteBall);
+    }
 }

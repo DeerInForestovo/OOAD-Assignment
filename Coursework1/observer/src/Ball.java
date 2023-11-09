@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class Ball extends JComponent {
+public abstract class Ball extends JComponent {
     private Color color;
     private int x, y;
     private int xSpeed, ySpeed;
@@ -138,6 +138,6 @@ public class Ball extends JComponent {
         draw(g);
     }
 
-
+    abstract public void update(char key, WhiteBall whiteBall);
 }
 

@@ -14,7 +14,7 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(null);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        mainPanel = new MainPanel();
+        mainPanel = new MainPanel(new WhiteBall(0, 0, 200));
         buttonPanel = new ButtonPanel();
 
         mainPanel.setLocation(5, 5);
@@ -34,13 +34,12 @@ public class MainFrame extends JFrame {
         stop.setEnabled(false);
         restart.setEnabled(false);
 
-        mainPanel.setWhiteBall(new Ball(Color.WHITE, 0, 0, 200));
         Ball.setCount(0);
 
 
         red.addActionListener(l -> {
             if (Ball.getCount() < Ball.TOTAL_NUM) {
-                mainPanel.addBallToPanel(new Ball(Color.RED, 3, 2, 60));
+                mainPanel.addBallToPanel(new RedBall(3, 2, 60));
                 mainPanel.scoreIncrement(-10);
                 redCount++;
                 buttonPanel.getRedCountLabel().setText("RED: " + redCount);
@@ -49,7 +48,7 @@ public class MainFrame extends JFrame {
 
         blue.addActionListener(l -> {
             if (Ball.getCount() < Ball.TOTAL_NUM) {
-                mainPanel.addBallToPanel(new Ball(Color.BLUE, 6, 4, 60));
+                mainPanel.addBallToPanel(new BlueBall(6, 4, 60));
                 mainPanel.scoreIncrement(+30);
                 blueCount++;
                 buttonPanel.getBlueCountLabel().setText("BlUE: " + blueCount);
