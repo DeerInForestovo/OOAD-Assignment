@@ -6,7 +6,7 @@ public class Staff {
     private String password;
     private String department;
 
-    public Staff(){
+    public Staff() {
 
     }
 

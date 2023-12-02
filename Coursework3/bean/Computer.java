@@ -4,7 +4,7 @@ public class Computer {
     private int id;
     private String name;
 
-    public Computer(int staffID){
+    public Computer(int staffID) {
 
     }
 }

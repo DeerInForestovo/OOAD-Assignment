@@ -2,33 +2,44 @@ package service;
 
 import bean.Computer;
 import bean.Staff;
-import dao.ComputerDao;
-import dao.ComputerFactory;
-import dao.StaffDao;
-import dao.StaffFactory;
+import dao.*;
+import singleton.DaoFactoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class client {
-    public static void main(String [] args){
+    public static void main(String[] args) {
+//        StaffFactory staffFactory = new StaffFactory();
+//        ComputerFactory computerFactory = new ComputerFactory();
+//        StaffDao staffDao = staffFactory.createStaffDao(1);
+//        ComputerDao computerDao = computerFactory.createComputerDao(1);
 
-        StaffFactory staffFactory=new StaffFactory();
-        ComputerFactory computerFactory=new ComputerFactory();
+        DaoFactory mysqlDaoFactory = new MysqlDaoFactory();
+        Dao mysqlDao = mysqlDaoFactory.createDao();
+        test(mysqlDao.getStaffDao(), mysqlDao.getComputerDao());
+        System.out.println();
 
-        StaffDao staffDao=staffFactory.createStaffDao(1);
-        ComputerDao computerDao=computerFactory.createComputerDao(1);
+        DaoFactory sqlServerDaoFactory = new SqlServerDaoFactory();
+        Dao sqlServerDao = sqlServerDaoFactory.createDao();
+        test(sqlServerDao.getStaffDao(), sqlServerDao.getComputerDao());
+        System.out.println();
 
-        test(staffDao,computerDao);
+        DaoFactory sqlDaoFactory = DaoFactoryImpl.getInstance();
+        Dao sqlDao = sqlDaoFactory.createDao();
+        test(sqlDao.getStaffDao(), sqlDao.getComputerDao());
+        System.out.println();
     }
 
-    public static void test(StaffDao staffDao, ComputerDao computerDao){
-        Scanner input=new Scanner(System.in);
-        int op=-1;
-        do{
-            try{
-                op=input.nextInt();
-                switch (op){
+    // test:
+    // 1 2 4 5 3 6 0
+    public static void test(StaffDao staffDao, ComputerDao computerDao) {
+        Scanner input = new Scanner(System.in);
+        int op = -1;
+        do {
+            try {
+                op = input.nextInt();
+                switch (op) {
                     case 1:
                         staffDao.insertStaff(new Staff());
                         break;
@@ -47,11 +58,10 @@ public class client {
                     case 6:
                         computerDao.deleteComputer(1);
                         break;
-
                 }
-            }catch(InputMismatchException e){
-                System.out.println("Exception "+e);
+            } catch (InputMismatchException e) {
+                System.out.println("Exception " + e);
             }
-        }while(op!=0);
+        } while (op != 0);
     }
 }
